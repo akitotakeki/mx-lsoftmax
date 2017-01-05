@@ -17,7 +17,7 @@ Gradient check can be failed with data type float32 but ok with data type float6
 
 ## Operator Performance
 
-I implement the operator both in Python and C++(CUDA). The performance below is training LeNet on a single GTX1070 with parameters margin = 4, lambda = 1. **Notice** the C++ implement can only run on GPU context.
+I implement the operator both in Python and C++(CUDA). The performance below is training LeNet on a single GTX1070 with parameters margin = 4, beta = 1. **Notice** the C++ implement can only run on GPU context.
 
 |Batch Size     |traditional fully connected    |lsoftmax in Python         |lsoftmax in C++(CUDA)      |
 |---------------|-------------------------------|---------------------------|---------------------------|
@@ -30,15 +30,15 @@ I implement the operator both in Python and C++(CUDA). The performance below is 
 
 ![lsoftmax-margin-1](imgs/mnist-lsoftmax-margin-1.png)
 
-### lsoftmax with margin = 2 and lambda = 1
+### lsoftmax with margin = 2, beta = 100 and scale = 0.99
 
 ![lsoftmax-margin-2](imgs/mnist-lsoftmax-margin-2.png)
 
-### lsoftmax with margin = 3 and lambda = 1
+### lsoftmax with margin = 3, beta = 100 and scale = 0.99
 
 ![lsoftmax-margin-3](imgs/mnist-lsoftmax-margin-3.png)
 
-### lsoftmax with margin = 4 and lambda = 1
+### lsoftmax with margin = 4, beta = 100 and scale = 0.99
 
 ![lsoftmax-margin-4](imgs/mnist-lsoftmax-margin-4.png)
 
