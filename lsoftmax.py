@@ -55,21 +55,22 @@ class LSoftmaxOp(mx.operator.CustomOp):
         label = label.asnumpy()
         # original fully connected
         out = x.dot(w.T)
-        # large margin fully connected
-        n = label.shape[0]
-        w_norm = np.linalg.norm(w, axis=1)
-        x_norm = np.linalg.norm(x, axis=1)
-        for i in range(n):
-            j = yi = int(label[i])
-            f = out[i, yi]
-            cos_t = f / (w_norm[yi] * x_norm[i])
-            # calc k and cos_mt
-            k = self.find_k(cos_t)
-            cos_mt = self.calc_cos_mt(cos_t)
-            # f_i_j = (\beta * f_i_j + fo_i_j) / (1 + \beta)
-            fo_i_j = f
-            f_i_j = (pow(-1, k) * cos_mt - 2*k) * (w_norm[yi] * x_norm[i])
-            out[i, yi] = (f_i_j + self.beta * fo_i_j) / (1 + self.beta)
+        if is_train:
+            # large margin fully connected
+            n = label.shape[0]
+            w_norm = np.linalg.norm(w, axis=1)
+            x_norm = np.linalg.norm(x, axis=1)
+            for i in range(n):
+                j = yi = int(label[i])
+                f = out[i, yi]
+                cos_t = f / (w_norm[yi] * x_norm[i])
+                # calc k and cos_mt
+                k = self.find_k(cos_t)
+                cos_mt = self.calc_cos_mt(cos_t)
+                # f_i_j = (\beta * f_i_j + fo_i_j) / (1 + \beta)
+                fo_i_j = f
+                f_i_j = (pow(-1, k) * cos_mt - 2*k) * (w_norm[yi] * x_norm[i])
+                out[i, yi] = (f_i_j + self.beta * fo_i_j) / (1 + self.beta)
         self.assign(out_data[0], req[0], mx.nd.array(out))
 
     def backward(self, req, out_grad, in_data, out_data, in_grad, aux):

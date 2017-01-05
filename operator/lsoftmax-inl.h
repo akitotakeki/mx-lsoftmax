@@ -94,22 +94,24 @@ class LSoftmaxOp : public Operator {
 #endif
     // original fully connected
     out = dot(x, w.T());
-    // large margin fully connected
-    const int margin = param_.margin;
-    const DType beta = static_cast<DType>(param_.beta);
-    Tensor<cpu, 1, DType> k_table_cpu(k_table_.data(), Shape1(k_table_.size()));
-    Tensor<cpu, 1, DType> c_table_cpu(c_table_.data(), Shape1(c_table_.size()));
-    Tensor<xpu, 1, DType> k_table_xpu(Shape1(k_table_.size()));
-    Tensor<xpu, 1, DType> c_table_xpu(Shape1(c_table_.size()));
-    k_table_xpu.set_stream(s);
-    c_table_xpu.set_stream(s);
-    AllocSpace(&k_table_xpu);
-    AllocSpace(&c_table_xpu);
-    Copy(k_table_xpu, k_table_cpu, s);
-    Copy(c_table_xpu, c_table_cpu, s);
-    LSoftmaxForward(x, w, label, out, x_norm, w_norm, k_table_xpu, c_table_xpu, margin, beta);
-    FreeSpace(&k_table_xpu);
-    FreeSpace(&c_table_xpu);
+    if (ctx.is_train) {
+      // large margin fully connected
+      const int margin = param_.margin;
+      const DType beta = static_cast<DType>(param_.beta);
+      Tensor<cpu, 1, DType> k_table_cpu(k_table_.data(), Shape1(k_table_.size()));
+      Tensor<cpu, 1, DType> c_table_cpu(c_table_.data(), Shape1(c_table_.size()));
+      Tensor<xpu, 1, DType> k_table_xpu(Shape1(k_table_.size()));
+      Tensor<xpu, 1, DType> c_table_xpu(Shape1(c_table_.size()));
+      k_table_xpu.set_stream(s);
+      c_table_xpu.set_stream(s);
+      AllocSpace(&k_table_xpu);
+      AllocSpace(&c_table_xpu);
+      Copy(k_table_xpu, k_table_cpu, s);
+      Copy(c_table_xpu, c_table_cpu, s);
+      LSoftmaxForward(x, w, label, out, x_norm, w_norm, k_table_xpu, c_table_xpu, margin, beta);
+      FreeSpace(&k_table_xpu);
+      FreeSpace(&c_table_xpu);
+    }
   }
 
   virtual void Backward(const OpContext &ctx,
